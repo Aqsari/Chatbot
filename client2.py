@@ -159,7 +159,7 @@ class EmotionalChatClient:
             message (str): Pesan yang akan dikirim
         """
         try:
-            # Deteksi emosi dari pesan
+        # Deteksi emosi dari pesan
             emotion = self.detect_emotion(message)
             self.emotion_history.append({
                 'message': message,
@@ -167,25 +167,27 @@ class EmotionalChatClient:
                 'timestamp': datetime.now().isoformat()
             })
 
+            # the input have diffendt value with expeted format. 
+            
             formatted_message = f"{self.username} ({self.chat_type}) [{emotion}]: {message}"
-
+            
             response = requests.post(
-                f'{self.server_url}/api/message',
+                f'{self.server_url}/api/chat',
                 json={
-                    'message': formatted_message,
+                    'message': message,
                     'chat_type': self.chat_type,
                     'emotion': emotion
                 },
                 timeout=5
             )
-
+            
             if response.status_code != 200:
                 logging.error(f"Error mengirim pesan: {response.json()}")
                 print("\nError: Pesan tidak terkirim")
 
             # Tampilkan balasan dari bot berdasarkan emosi
-            response_message = self.generate_response_based_on_emotion(emotion)
-            print(f"Bot: {response_message}")
+            response_message = response.json()['message']
+            print(f"Bot response from server: {response_message}")
 
         except requests.exceptions.RequestException as e:
             logging.error(f"Error mengirim pesan: {e}")

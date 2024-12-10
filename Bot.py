@@ -380,9 +380,9 @@ def validate_request_data(data: Dict, required_fields: List[str]) -> bool:
 
 
 
-def response_generator(user_input, best_intent):
-    # Placeholder for response generation logic
-    return f"I see you're interested in {best_intent}. How can I assist you further?"
+# def response_generator(user_input, best_intent):
+#     # Placeholder for response generation logic
+#     return f"I see you're interested in {best_intent}. How can I assist you further?"
 
 def extract_best_intent(list_intent):
     # Placeholder for intent extraction logic
@@ -470,7 +470,7 @@ def leave_chat():
         'message': f'Sampai jumpa {username}!'
     })
 
-@app.route('/chat', methods=['POST'])
+@app.route('/api/chat', methods=['POST'])
 def chat():
     """
     Handler untuk menerima pesan
@@ -482,18 +482,24 @@ def chat():
             'status': 'error',
             'message': 'Pesan diperlukan'
         }), 400
+    else:
+        print("its validate")
 
 
     message = data['message']
     chat_type = data.get('chat_type', 'Group')
     emotion = data.get('emotion', 'netral')
 
+    print(message)
+    print(chat_type)
+    print(emotion)
     # user_input = request.json.get('message')
     # user_name = request.json.get('name', 'User')
 
     # Process input
     processed_text = tfidf_transformer_xtest.fit_transform(countVectorizer1.transform([message]))
 
+    print(processed_text)
     # Predict intents using SVM and MLP
     svm_intent = svm.predict(processed_text)[0]
     mlp_intent = mlp.predict(processed_text)[0]
@@ -509,15 +515,18 @@ def chat():
         'message': message,
         'timestamp': datetime.now().isoformat(),
         'chat_type': chat_type,
-        'emotion': emotion
+        'emotion': best_intent
     }
     database.messages.append(message_data)
 
+
+    print(f"ini di database : {message_data}")
+    print(f"ini di response bot : {bot_response}")
     log_activity(f"Pesan baru diterima: {message[:50]}...")
 
     return jsonify({
         'status': 'success',
-        'message': message
+        'message': bot_response
     })
 
 
