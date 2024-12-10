@@ -1,1 +1,4 @@
 Add sudah masuk apa belum?
+
+
+jika berbicara arsitekture , naming, trasnparancy

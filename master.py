@@ -269,7 +269,7 @@ def setup_server():
     """
     Melakukan setup awal server
     """
-    log_activity("Server chat emosional dimulai")
+    log_activity("Server bot dimulai")
     # Tambahkan konfigurasi tambahan di sini jika diperlukan
 
 

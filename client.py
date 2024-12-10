@@ -158,38 +158,40 @@ class EmotionalChatClient:
         Parameters:
             message (str): Pesan yang akan dikirim
         """
-        try:
-            # Deteksi emosi dari pesan
-            emotion = self.detect_emotion(message)
-            self.emotion_history.append({
-                'message': message,
-                'emotion': emotion,
-                'timestamp': datetime.now().isoformat()
-            })
+        # try:
+        # Deteksi emosi dari pesan
+        emotion = self.detect_emotion(message)
+        self.emotion_history.append({
+            'message': message,
+            'emotion': emotion,
+            'timestamp': datetime.now().isoformat()
+        })
 
-            formatted_message = f"{self.username} ({self.chat_type}) [{emotion}]: {message}"
+        # the input have diffendt value with expeted format. 
+        
+        formatted_message = f"{self.username} ({self.chat_type}) [{emotion}]: {message}"
+        print("here i am "+formatted_message)
+        response = requests.post(
+            f'{self.server_url}/api/chat',
+            json={
+                'message': formatted_message,
+                'chat_type': self.chat_type,
+                'emotion': emotion
+            },
+            timeout=5
+        )
 
-            response = requests.post(
-                f'{self.server_url}/api/message',
-                json={
-                    'message': formatted_message,
-                    'chat_type': self.chat_type,
-                    'emotion': emotion
-                },
-                timeout=5
-            )
+        if response.status_code != 200:
+            logging.error(f"Error mengirim pesan: {response.json()}")
+            print("\nError: Pesan tidak terkirim")
 
-            if response.status_code != 200:
-                logging.error(f"Error mengirim pesan: {response.json()}")
-                print("\nError: Pesan tidak terkirim")
+        # Tampilkan balasan dari bot berdasarkan emosi
+        response_message = self.generate_response_based_on_emotion(emotion)
+        print(f"Bot: {response_message}")
 
-            # Tampilkan balasan dari bot berdasarkan emosi
-            response_message = self.generate_response_based_on_emotion(emotion)
-            print(f"Bot: {response_message}")
-
-        except requests.exceptions.RequestException as e:
-            logging.error(f"Error mengirim pesan: {e}")
-            print(f"\nError: Gagal mengirim pesan. {e}")
+        # except requests.exceptions.RequestException as e:
+            # logging.error(f"Error mengirim pesan: {e}")
+            # print(f"\nError: Gagal mengirim pesan. {e}")
 
     def generate_response_based_on_emotion(self, emotion: str) -> str:
         """Menghasilkan balasan berdasarkan emosi yang terdeteksi."""
