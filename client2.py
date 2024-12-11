@@ -141,7 +141,7 @@ class EmotionalChatClient:
                     ]
 
                     for msg in new_messages:
-                        print(f"\n{msg['message']}")
+                        print(f"\n  {msg['username']}: {msg['message']}")
 
                     if new_messages:
                         self.last_message_time = messages[-1]['timestamp']
@@ -162,6 +162,7 @@ class EmotionalChatClient:
         # Deteksi emosi dari pesan
             emotion = self.detect_emotion(message)
             self.emotion_history.append({
+                'username': self.username,
                 'message': message,
                 'emotion': emotion,
                 'timestamp': datetime.now().isoformat()
@@ -172,8 +173,9 @@ class EmotionalChatClient:
             formatted_message = f"{self.username} ({self.chat_type}) [{emotion}]: {message}"
             
             response = requests.post(
-                f'{self.server_url}/api/chat',
+                f'{self.server_url}/api/message',
                 json={
+                    'username': self.username,
                     'message': message,
                     'chat_type': self.chat_type,
                     'emotion': emotion
@@ -187,7 +189,7 @@ class EmotionalChatClient:
 
             # Tampilkan balasan dari bot berdasarkan emosi
             response_message = response.json()['message']
-            print(f"Bot response from server: {response_message}")
+            print(f"Bot: {response_message}")
 
         except requests.exceptions.RequestException as e:
             logging.error(f"Error mengirim pesan: {e}")
@@ -270,11 +272,11 @@ def main():
             if choice == '1':
                 client.start_chat("Group")
             elif choice == '2':
-                recipient = input("Masukkan username tujuan: ").strip()
-                while not recipient:
-                    print("Error: Username tujuan tidak boleh kosong!")
-                    recipient = input("Masukkan username tujuan: ").strip()
-                client.start_chat(f"Personal with {recipient}")
+                # recipient = input("Masukkan username tujuan: ").strip()
+                # while not recipient:
+                #     print("Error: Username tujuan tidak boleh kosong!")
+                #     recipient = input("Masukkan username tujuan: ").strip()
+                 client.start_chat(f"Personal with bot")
             elif choice == '3':
                 print("\nTerima kasih telah menggunakan aplikasi chat!")
                 break

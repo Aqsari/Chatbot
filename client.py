@@ -139,13 +139,18 @@ class EmotionalChatClient:
                         msg for msg in messages
                         if not self.last_message_time or msg['timestamp'] > self.last_message_time
                     ]
+                    
+                    # Ambil tiga pesan terakhir dari new_messages
+                    last_three_messages = new_messages[-3:]  # Mengambil tiga pesan terakhir
 
-                    for msg in new_messages:
-                        print(f"\n{msg['message']}")
-
+                    # Cek apakah ada pesan baru untuk ditampilkan
+                    if last_three_messages:
+                        for msg in last_three_messages:
+                            print(f"\n  {msg['username']}: {msg['message']}")
+                    
+                    # Update last_message_time jika ada pesan baru
                     if new_messages:
-                        self.last_message_time = messages[-1]['timestamp']
-
+                        self.last_message_time = new_messages[-1]['timestamp']
                 time.sleep(1)  # Poll setiap detik
             except Exception as e:
                 logging.error(f"Error dalam polling pesan: {e}")
@@ -162,6 +167,7 @@ class EmotionalChatClient:
         # Deteksi emosi dari pesan
             emotion = self.detect_emotion(message)
             self.emotion_history.append({
+                'username': self.username,
                 'message': message,
                 'emotion': emotion,
                 'timestamp': datetime.now().isoformat()
@@ -172,8 +178,9 @@ class EmotionalChatClient:
             formatted_message = f"{self.username} ({self.chat_type}) [{emotion}]: {message}"
             
             response = requests.post(
-                f'{self.server_url}/api/chat',
+                f'{self.server_url}/api/message',
                 json={
+                    'username': self.username,
                     'message': message,
                     'chat_type': self.chat_type,
                     'emotion': emotion
@@ -187,7 +194,8 @@ class EmotionalChatClient:
 
             # Tampilkan balasan dari bot berdasarkan emosi
             response_message = response.json()['message']
-            print(f"Bot response from server: {response_message}")
+            replayer = response.json()['username']
+            print(f"{replayer}: {response_message}")
 
         except requests.exceptions.RequestException as e:
             logging.error(f"Error mengirim pesan: {e}")
@@ -225,6 +233,7 @@ class EmotionalChatClient:
 
             try:
                 while True:
+                    # print(f"{self.username} : ")
                     message = input()
                     if message.lower() == 'quit':
                         break
@@ -270,11 +279,11 @@ def main():
             if choice == '1':
                 client.start_chat("Group")
             elif choice == '2':
-                recipient = input("Masukkan username tujuan: ").strip()
-                while not recipient:
-                    print("Error: Username tujuan tidak boleh kosong!")
-                    recipient = input("Masukkan username tujuan: ").strip()
-                client.start_chat(f"Personal with {recipient}")
+                # recipient = input("Masukkan username tujuan: ").strip()
+                # while not recipient:
+                    # print("Error: Username tujuan tidak boleh kosong!")
+                    # recipient = input("Masukkan username tujuan: ").strip()
+                client.start_chat("Personal with bot")
             elif choice == '3':
                 print("\nTerima kasih telah menggunakan aplikasi chat!")
                 break

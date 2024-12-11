@@ -422,6 +422,7 @@ def join_chat():
         database.messages.append({
             'message': join_message,
             'timestamp': datetime.now().isoformat(),
+            'username': 'SYSTEM',
             'chat_type': 'Group',
             'emotion': 'system'
         })
@@ -470,7 +471,7 @@ def leave_chat():
         'message': f'Sampai jumpa {username}!'
     })
 
-@app.route('/api/chat', methods=['POST'])
+@app.route('/api/message', methods=['POST'])
 def chat():
     """
     Handler untuk menerima pesan
@@ -486,6 +487,7 @@ def chat():
         print("its validate")
 
 
+    username = data['username']
     message = data['message']
     chat_type = data.get('chat_type', 'Group')
     emotion = data.get('emotion', 'netral')
@@ -493,6 +495,7 @@ def chat():
     print(message)
     print(chat_type)
     print(emotion)
+    print(username)
     # user_input = request.json.get('message')
     # user_name = request.json.get('name', 'User')
 
@@ -512,11 +515,14 @@ def chat():
 
      # Simpan pesan dengan informasi tambahan
     message_data = {
-        'message': message,
+        'username':'Bot',
+        'message': bot_response,
         'timestamp': datetime.now().isoformat(),
         'chat_type': chat_type,
         'emotion': best_intent
     }
+
+   
     database.messages.append(message_data)
 
 
@@ -526,8 +532,88 @@ def chat():
 
     return jsonify({
         'status': 'success',
-        'message': bot_response
+        'message': bot_response,
+        'username': 'Bot'
     })
+
+@app.route('/api/messages', methods=['GET'])
+def get_messages():
+    """
+    Handler untuk mengambil pesan
+    """
+    chat_type = request.args.get('chat_type', 'Group')
+    username = request.args.get('username', 'Bot')
+
+    # Filter pesan sesuai tipe chat
+    if chat_type == 'Group':
+        filtered_messages = [
+            msg for msg in database.messages
+            if msg['chat_type'] == 'Group'
+        ]
+    else:
+        filtered_messages = [
+            msg for msg in database.messages
+            if msg['chat_type'].startswith('Personal')
+               and username in msg['chat_type']
+        ]
+
+    return jsonify({
+        'messages': filtered_messages,
+        'active_users': list(database.group_chat_users)
+    })
+
+@app.route('/api/emotions/<username>', methods=['GET'])
+def get_user_emotions(username):
+    """
+    Handler untuk mengambil history emosi pengguna
+    """
+    if username in database.emotion_history:
+        return jsonify({
+            'status': 'success',
+            'emotions': database.emotion_history[username]
+        })
+    return jsonify({
+        'status': 'error',
+        'message': 'Riwayat emosi tidak ditemukan'
+    }), 404
+
+
+@app.route('/api/active_users', methods=['GET'])
+def get_active_users():
+    """
+    Handler untuk mendapatkan daftar pengguna aktif
+    """
+    return jsonify({
+        'active_users': list(database.group_chat_users),
+        'total_users': len(database.active_users)
+    })
+
+
+@app.route('/api/user/status', methods=['POST'])
+def update_user_status():
+    """
+    Handler untuk memperbarui status pengguna
+    """
+    data = request.json
+    if not validate_request_data(data, ['username', 'status']):
+        return jsonify({
+            'status': 'error',
+            'message': 'Username dan status diperlukan'
+        }), 400
+
+    username = data['username']
+    status = data['status']
+
+    if username in database.active_users:
+        database.active_users[username]['status'] = status
+        return jsonify({
+            'status': 'success',
+            'message': f'Status {username} diperbarui'
+        })
+    return jsonify({
+        'status': 'error',
+        'message': 'Pengguna tidak ditemukan'
+    }), 404
 
 
 # ====================================
