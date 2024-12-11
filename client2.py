@@ -124,7 +124,7 @@ class EmotionalChatClient:
                 data = response.json()
                 return data.get('messages', []), data.get('active_users', [])
         except requests.exceptions.RequestException as e:
-            logging.error(f"Error mengambil pesan: {e}")
+            # logging.error(f"Error mengambil pesan: {e}")
         return [], []
 
     def message_polling(self):
@@ -165,6 +165,7 @@ class EmotionalChatClient:
                 'username': self.username,
                 'message': message,
                 'emotion': emotion,
+                'chat_type': self.chat_type,
                 'timestamp': datetime.now().isoformat()
             })
 

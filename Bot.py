@@ -486,16 +486,13 @@ def chat():
     else:
         print("its validate")
 
-
+    
     username = data['username']
     message = data['message']
     chat_type = data.get('chat_type', 'Group')
     emotion = data.get('emotion', 'netral')
+    
 
-    print(message)
-    print(chat_type)
-    print(emotion)
-    print(username)
     # user_input = request.json.get('message')
     # user_name = request.json.get('name', 'User')
 
@@ -511,6 +508,17 @@ def chat():
     list_intent = [svm_intent, mlp_intent]
     best_intent, _ = extract_best_intent(list_intent)
 
+    message_data_client = {
+        'username': username,
+        'message': message,
+        'timestamp': datetime.now().isoformat(),
+        'chat_type': chat_type,
+        'emotion': best_intent
+    }
+
+   
+    database.messages.append(message_data_client)
+
     bot_response = response_generator(message, best_intent)
 
      # Simpan pesan dengan informasi tambahan
@@ -525,10 +533,10 @@ def chat():
    
     database.messages.append(message_data)
 
-
+    print(f"ini emosi client : {list_intent}")
     print(f"ini di database : {message_data}")
     print(f"ini di response bot : {bot_response}")
-    log_activity(f"Pesan baru diterima: {message[:50]}...")
+    log_activity(f"Pesan baru diterima: {message[:5]}...")
 
     return jsonify({
         'status': 'success',

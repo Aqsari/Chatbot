@@ -139,21 +139,16 @@ class EmotionalChatClient:
                         msg for msg in messages
                         if not self.last_message_time or msg['timestamp'] > self.last_message_time
                     ]
-                    
-                    # Ambil tiga pesan terakhir dari new_messages
-                    last_three_messages = new_messages[-3:]  # Mengambil tiga pesan terakhir
 
-                    # Cek apakah ada pesan baru untuk ditampilkan
-                    if last_three_messages:
-                        for msg in last_three_messages:
-                            print(f"\n  {msg['username']}: {msg['message']}")
-                    
-                    # Update last_message_time jika ada pesan baru
+                    for msg in new_messages:
+                        print(f"\n  {msg['username']}: {msg['message']}")
+
                     if new_messages:
-                        self.last_message_time = new_messages[-1]['timestamp']
+                        self.last_message_time = messages[-1]['timestamp']
+
                 time.sleep(1)  # Poll setiap detik
             except Exception as e:
-                logging.error(f"Error dalam polling pesan: {e}")
+                # logging.error(f"Error dalam polling pesan: {e}")
                 time.sleep(1)  # Tetap wait jika terjadi error
 
     def send_message(self, message: str) -> None:
@@ -170,6 +165,7 @@ class EmotionalChatClient:
                 'username': self.username,
                 'message': message,
                 'emotion': emotion,
+                'chat_type': self.chat_type,
                 'timestamp': datetime.now().isoformat()
             })
 
